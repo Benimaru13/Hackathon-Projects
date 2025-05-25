@@ -3,9 +3,7 @@ from urllib.parse import urlparse
 import openai, os, validators, whois
 from dotenv import load_dotenv
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-link_split = ["https://", "http://", "www.", ".com", ".net", ".org", ".io", ".co", ".info", ".biz"]
+load_dotenv
 # Phishing Detector
 # Idea s...ingenuity, prototypes
 # SCALE: 1-5
@@ -30,20 +28,6 @@ AUTHENTIC_WEBSITES_LIST = [
 
 UrlLink = "https://samsung.com"
 CriteriaCount = 0
-"""
-# Example of using OpenAI API to get information about phishing
-openai.api_key = 'your-api-key-here'
-
-response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "user", "content": "What is phishing?"},
-    ]
-)
-
-print(response['choices'][0]['message']['content'])
-"""
-
 # Helper Functions
 def get_whois_info(url):
     try:
@@ -93,6 +77,8 @@ class PhishingDetector:
         if self.parsed.netloc in AUTHENTIC_WEBSITES_LIST:
             # Check if the URL is in the list of authentic websites
             self.is_safe = True
+            final_score = 4.0
+            log = "The URL is safe."
         else:
             prefix_score = self.prefix_checker(self.url)
             tld_score = self.TLD_checker()
