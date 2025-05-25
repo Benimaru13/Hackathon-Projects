@@ -27,14 +27,12 @@ BlackList = []
 # Boolean Variables
 
 
-UrlLink = "www.google.com"
+UrlLink = input("Enter the URL to validate (start with http://): ")
+
 print("Validating URL:", UrlLink)
-keys = ["http://", "https://", "www."]
-    if not UrlLink.startswith(key):
-        UrlLink = key + UrlLink
-        # print("Updated URL:", UrlLink)
-CriteriaCount = 0
+
 # Helper Functions
+
 def get_base_domain(netloc):
     domain = netloc.split(':')[0]
     parts = domain.split('.')
@@ -120,7 +118,7 @@ class PhishingDetector:
                 self.is_safe = True
                 log = "The URL is safe."
                 # print(log) 
-            trust_review = self.trust_ranking(final_score)
+        trust_review = self.trust_ranking(final_score)
         return trust_review, str(final_score) + " out of 4.0", log      
         
     def domain_heuristics(self):
@@ -213,15 +211,20 @@ class PhishingDetector:
                 return 1
     
     def trust_ranking(self, score):
-        # Determine the trust ranking based on the score
-        if score > 4.5:
-            return "Very Authentic."
-        elif score > 3.5:
-            return "A bit sketchy. But still reliable."
-        elif score > 2.5:
-            return "Very sketchy. Not Authentic."
+        # Determine the trust ranking based 
+        if score:
+            if score > 4.5:
+                return "Very Authentic."
+            elif score > 3.5:
+                return "A bit sketchy. But still reliable."
+            elif score > 2.5:
+                return "Very sketchy. Not Authentic."
+            else:
+                return "Seems Phishy. Not Authentic."
         else:
-            return "Seems Phishy. Not Authentic."
+            return "Error: Invalid score"
+            log = "Error: Invalid score"
+            print(log)
 
         
 # the function that validates a url    
