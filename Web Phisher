@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 import openai, os, validators, whois
 from dotenv import load_dotenv
 
-load_dotenv
+load_dotenv()
 # Phishing Detector
 # Idea s...ingenuity, prototypes
 # SCALE: 1-5
@@ -219,8 +219,12 @@ class PhishingDetector:
             return "Seems Phishy. Not Authentic."
 
         
-# the function that validates a url       
-if not validators.url(UrlLink):
+# the function that validates a url    
+def validate_url(url):
+    if not url.startswith(('http://', 'https://')):
+        url = 'http://' + url
+    return validators.url(url)   
+if not validate_url(UrlLink):
     print("Invalid URL format")
 else:
     checker = PhishingDetector(UrlLink)
