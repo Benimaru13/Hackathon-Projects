@@ -1,6 +1,6 @@
 import random, math, time
 from urllib.parse import urlparse
-import openai, os, validators
+import openai, os, validators, whois
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,7 +29,7 @@ AUTHENTIC_WEBSITES_LIST = [
 
 
 UrlLink = "https://samsung.com"
-
+CriteriaCount = 0
 """
 # Example of using OpenAI API to get information about phishing
 openai.api_key = 'your-api-key-here'
@@ -43,6 +43,34 @@ response = openai.ChatCompletion.create(
 
 print(response['choices'][0]['message']['content'])
 """
+
+# Helper Functions
+def get_whois_info(url):
+    try:
+        domain = urlparse(url).netloc
+        whois_info = whois.whois(domain)
+        age = whois_info.creation_date
+        if age:
+            age = age[0] if isinstance(age, list) else age
+            if isinstance(age, str):
+                age = time.strptime(age, "%Y-%m-%d %H:%M:%S")
+            elif isinstance(age, int):
+                age = time.localtime(age)
+            else:
+                return 1
+            current_time = time.localtime()
+            age_in_days = (time.mktime(current_time) - time.mktime(age)) / (24 * 3600)
+            if age_in_days < 30:
+                return 1
+            elif age_in_days < 365:
+                return 2
+            else:
+                return 3
+        else:
+            return 1
+    except Exception as e:
+        print(f"Error fetching WHOIS info: {e}")
+        return 1
 
 class PhishingDetector:
     def __init__(self, URL):
@@ -68,10 +96,10 @@ class PhishingDetector:
         else:
             prefix_score = self.prefix_checker(self.url)
             tld_score = self.TLD_checker()
-            ip_score = self.IP_address_checker()
-            length_score = self.length_checker()
+            domain_score = self.domain_heuristics()
+            whois_age_score = get_whois_info(self.url)
             # Calculate the final score
-            final_score = (prefix_score + tld_score + ip_score + length_score) / 4
+            final_score = (prefix_score + tld_score + domain_score + whois_age_score) / 4
             # Determine if the URL is phishing based on the final score
             final_score = round(final_score, 2)
             if final_score < 2:
@@ -84,11 +112,23 @@ class PhishingDetector:
                 print(log) 
         return self.is_safe, str(final_score) + " out of 4.0", log      
         
-    
+    def domain_heuristics(self):
+        prefix_score = self.prefix_checker(self.url)
+        tld_score = self.TLD_checker()
+        ip_score = self.IP_address_checker()
+        length_score = self.length_checker()
+        random_char_score = self.random_char_checker()
+        sus_score = self.suspicious_checker()
+        # Calculate the final score
+        criteria = [prefix_score, tld_score, ip_score, length_score, random_char_score, sus_score]
+        criteria = [x for x in criteria if x is not None]
+        domain_score = sum(criteria) / len(criteria)
+        return domain_score
+
+
     def prefix_checker(self, url):
-        parsed = urlparse(url)
         try:
-            scheme = parsed.scheme.lower()
+            scheme = self.parsed.scheme.lower()
             if scheme == "http":
                 return 1
             elif scheme == "https":
@@ -105,9 +145,8 @@ class PhishingDetector:
 
     # Check the TLD of the URL   
     def TLD_checker(self):
-        parsed = urlparse(self.url)
         try:
-            domain = parsed.netloc
+            domain = self.parsed.netloc
             tld = domain.split(".")[-1]
 
             if tld in ["com", "net", "org", "io", "co"]:
@@ -120,27 +159,44 @@ class PhishingDetector:
             return 1
             log = "Error: Invalid URL format"
             print(log)
+        
     
     # Check if the URL contains an IP address    
     def IP_address_checker(self):
-        parsed = urlparse(self.url)
-        domain = parsed.netloc
+        domain = self.parsed.netloc
         if domain.replace(".", "").isdigit():
             return 1
-        else:
-            return 2
+
 
     def length_checker(self):
-        parsed = urlparse(self.url)
-        length = len(parsed.path)
-        if length < 20:
-            return 2
-        elif length < 50:
-            return 1.5
-        else:
-            return 1
-        
+        length = len(self.parsed.path)
+        if length > 20:
+            if length > 50:
+                return 1
+            else:
+                return 2
 
+        
+    def random_char_checker(self):
+        # Check for random characters in the URL
+        flaws = []
+        if "@" in self.parsed.netloc:
+            flaws.append(1)
+        if "-" in self.parsed.netloc:
+            if self.parsed.netloc.count("-") > 2:
+                flaws.append(1)
+        if "_" in self.parsed.netloc:
+            if self.parsed.netloc.count("_") > 2:
+                flaws.append(1)
+        if len(flaws) > 0:
+            return 1
+            
+    def suspicious_checker(self):
+        # Check for suspicious patterns in the URL
+        sus_patterns = ["login", "secure", "update", "verify", "account", "confirm"]
+        for pattern in sus_patterns:
+            if pattern in self.parsed.path.lower():
+                return 1
         """"   
         prefix_checker()
         TLD_checker()
