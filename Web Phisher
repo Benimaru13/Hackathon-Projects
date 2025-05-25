@@ -27,7 +27,12 @@ BlackList = []
 # Boolean Variables
 
 
-UrlLink = "google-auth-update.support-secure.net"
+UrlLink = "www.google.com"
+print("Validating URL:", UrlLink)
+keys = ["http://", "https://", "www."]
+    if not UrlLink.startswith(key):
+        UrlLink = key + UrlLink
+        # print("Updated URL:", UrlLink)
 CriteriaCount = 0
 # Helper Functions
 def get_base_domain(netloc):
@@ -76,10 +81,10 @@ class PhishingDetector:
     # parses the URL and extracts components
     # such as scheme, domain, path, and query parameters
     def parse_url(self):
-        print("Scheme (http or https):", self.parsed.scheme)
-        print("Domain:", self.parsed.netloc)
-        print("Path:", self.parsed.path)
-        print("Query Params:", self.parsed.query)
+        # print("Scheme (http or https):", self.parsed.scheme)
+        # print("Domain:", self.parsed.netloc)
+        # print("Path:", self.parsed.path)
+        # print("Query Params:", self.parsed.query)
         return self.parsed
 
     # Scrutinizes the URL to determine if it is phishing
@@ -220,11 +225,11 @@ class PhishingDetector:
 
         
 # the function that validates a url    
-def validate_url(url):
-    if not url.startswith(('http://', 'https://')):
-        url = 'http://' + url
-    return validators.url(url)   
-if not validate_url(UrlLink):
+
+# Check if the URL is empty or invalid
+if not UrlLink:
+    print("URL is empty")
+elif not validators.url(UrlLink):
     print("Invalid URL format")
 else:
     checker = PhishingDetector(UrlLink)
