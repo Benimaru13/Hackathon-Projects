@@ -1,7 +1,6 @@
 import random, math, time
 from urllib.parse import urlparse
-import openai
-import os
+import openai, os, validators
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,7 +28,8 @@ AUTHENTIC_WEBSITES_LIST = [
 # Boolean Variables
 
 
-UrlLink = input("Input the suspicious text.")
+UrlLink = "https://samsung.com"
+
 """
 # Example of using OpenAI API to get information about phishing
 openai.api_key = 'your-api-key-here'
@@ -47,24 +47,22 @@ print(response['choices'][0]['message']['content'])
 class PhishingDetector:
     def __init__(self, URL):
         self.url = URL
-        self.parsed_link = self.url.split(".")
+        self.parsed = urlparse(self.url)
         self.is_safe = True
 
     # parses the URL and extracts components
     # such as scheme, domain, path, and query parameters
     def parse_url(self):
-        global parsed
-        parsed = urlparse(self.url)
-        print("Scheme (http or https):", parsed.scheme)
-        print("Domain:", parsed.netloc)
-        print("Path:", parsed.path)
-        print("Query Params:", parsed.query)
-        return parsed 
+        print("Scheme (http or https):", self.parsed.scheme)
+        print("Domain:", self.parsed.netloc)
+        print("Path:", self.parsed.path)
+        print("Query Params:", self.parsed.query)
+        return self.parsed
 
     # Scrutinizes the URL to determine if it is phishing
     # or not based on various checks 
     def scrutinize(self):
-        if parsed.netloc in AUTHENTIC_WEBSITES_LIST:
+        if self.parsed.netloc in AUTHENTIC_WEBSITES_LIST:
             # Check if the URL is in the list of authentic websites
             self.is_safe = True
         else:
@@ -151,12 +149,14 @@ class PhishingDetector:
         """
     
         
-        
-
-checker = PhishingDetector(UrlLink)
-result = checker.parse_url()
-Phish = checker.scrutinize()
-print("Phishing Status:", Phish[0])
-print("Phishing Status:", Phish[1])
-print("Phishing Status:", Phish[2])
-print(result)
+ # the function that validates a url       
+if not validators.url(UrlLink):
+    print("Invalid URL format")
+else:
+    checker = PhishingDetector(UrlLink)
+    result = checker.parse_url()
+    Phish = checker.scrutinize()
+    print("Phishing Status:", Phish[0])
+    print("Phishing Status:", Phish[1])
+    print("Phishing Status:", Phish[2])
+    print(result)
