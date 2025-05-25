@@ -27,7 +27,7 @@ BlackList = []
 # Boolean Variables
 
 
-UrlLink = "skibidi link"
+UrlLink = "google-auth-update.support-secure.net"
 CriteriaCount = 0
 # Helper Functions
 def get_base_domain(netloc):
