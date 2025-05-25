@@ -22,13 +22,22 @@ AUTHENTIC_WEBSITES_LIST = [
 
 ]
 
+BlackList = []
 # global variables
 # Boolean Variables
 
 
-UrlLink = "https://samsung.com"
+UrlLink = "https://secure-login.microsoftonline-verification.com"
 CriteriaCount = 0
 # Helper Functions
+def get_base_domain(netloc):
+    domain = netloc.split(':')[0]
+    parts = domain.split('.')
+    if len(parts) > 2:
+        domain = '.'.join(parts[-2:])
+    return domain
+
+
 def get_whois_info(url):
     try:
         domain = urlparse(url).netloc
@@ -56,6 +65,8 @@ def get_whois_info(url):
         print(f"Error fetching WHOIS info: {e}")
         return 1
 
+
+# PhishingDetector Class
 class PhishingDetector:
     def __init__(self, URL):
         self.url = URL
@@ -74,11 +85,17 @@ class PhishingDetector:
     # Scrutinizes the URL to determine if it is phishing
     # or not based on various checks 
     def scrutinize(self):
-        if self.parsed.netloc in AUTHENTIC_WEBSITES_LIST:
+        base_domain = get_base_domain(self.parsed.netloc)
+        if base_domain in AUTHENTIC_WEBSITES_LIST:
             # Check if the URL is in the list of authentic websites
             self.is_safe = True
             final_score = 4.0
             log = "The URL is safe."
+        elif base_domain in BlackList:
+            # Check if the URL is in the blacklist
+            self.is_safe = False
+            final_score = 0.0
+            log = "The URL is phishing and has already been blacklisted."
         else:
             prefix_score = self.prefix_checker(self.url)
             tld_score = self.TLD_checker()
@@ -91,12 +108,15 @@ class PhishingDetector:
             if final_score < 2:
                 self.is_safe = False
                 log = "The URL is phishing."
-                print(log)
+                BlackList.append(self.parsed.netloc)
+                log += (" The URL has been added to the blacklist.")
+                # print(log)
             else:
                 self.is_safe = True
                 log = "The URL is safe."
-                print(log) 
-        return self.is_safe, str(final_score) + " out of 4.0", log      
+                # print(log) 
+            trust_review = self.trust_ranking(final_score)
+        return trust_review, str(final_score) + " out of 4.0", log      
         
     def domain_heuristics(self):
         prefix_score = self.prefix_checker(self.url)
@@ -162,7 +182,6 @@ class PhishingDetector:
             else:
                 return 2
 
-        
     def random_char_checker(self):
         # Check for random characters in the URL
         flaws = []
@@ -190,6 +209,17 @@ class PhishingDetector:
         length_checker()
         """
     
+    def trust_ranking(self, score):
+        # Determine the trust ranking based on the score
+        if score > 4.5:
+            return "Very Authentic."
+        elif score > 3.5:
+            return "A bit sketchy. But still reliable."
+        elif score > 2.5:
+            return "Very sketchy. Not Authentic."
+        else:
+            return "Seems Phishy. Not Authentic."
+
         
  # the function that validates a url       
 if not validators.url(UrlLink):
@@ -202,3 +232,4 @@ else:
     print("Phishing Status:", Phish[1])
     print("Phishing Status:", Phish[2])
     print(result)
+    print(f"BlackList: {BlackList}")
