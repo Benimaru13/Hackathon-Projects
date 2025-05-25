@@ -241,5 +241,5 @@ else:
     print("Phishing Status:", Phish[0])
     print("Phishing Status:", Phish[1])
     print("Phishing Status:", Phish[2])
-    print(result)
-    print(f"BlackList: {BlackList}")
+    # print(result)
+    # print(f"BlackList: {BlackList}")
