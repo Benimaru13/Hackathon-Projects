@@ -27,7 +27,7 @@ BlackList = []
 # Boolean Variables
 
 
-UrlLink = "https://secure-login.microsoftonline-verification.com"
+UrlLink = "skibidi link"
 CriteriaCount = 0
 # Helper Functions
 def get_base_domain(netloc):
@@ -151,20 +151,23 @@ class PhishingDetector:
 
     # Check the TLD of the URL   
     def TLD_checker(self):
-        try:
-            domain = self.parsed.netloc
-            tld = domain.split(".")[-1]
-
-            if tld in ["com", "net", "org", "io", "co"]:
-                return 2
-            elif tld in ["info", "biz"]:
-                return 1.5
-            else:
-                return 1
-        except AttributeError:
+        domain = self.parsed.netloc
+        if not domain:
             return 1
-            log = "Error: Invalid URL format"
-            print(log)
+        tld = domain.split(".")[-1]
+        if not tld:
+            return 1
+        # check for common TLDs
+        if tld in ["com", "net", "org", "io", "co"]:
+            return 2.5
+        # check for less common TLDs
+        elif tld in ["info", 'biz', 'xyz', 'top']:
+            return 1.5
+        # check for sketchy TLDs
+        elif tld in ["tk", "ga", "cf", "gq", "ml"]:
+            return 1
+        else:
+            return 1
         
     
     # Check if the URL contains an IP address    
@@ -173,7 +176,8 @@ class PhishingDetector:
         if domain.replace(".", "").isdigit():
             return 1
 
-
+    # Check the length of the URL path
+    # If the length is greater than 20, it is suspicious
     def length_checker(self):
         length = len(self.parsed.path)
         if length > 20:
@@ -182,8 +186,8 @@ class PhishingDetector:
             else:
                 return 2
 
+    # Check for random characters in the URL
     def random_char_checker(self):
-        # Check for random characters in the URL
         flaws = []
         if "@" in self.parsed.netloc:
             flaws.append(1)
@@ -202,12 +206,6 @@ class PhishingDetector:
         for pattern in sus_patterns:
             if pattern in self.parsed.path.lower():
                 return 1
-        """"   
-        prefix_checker()
-        TLD_checker()
-        IP_address_checker()
-        length_checker()
-        """
     
     def trust_ranking(self, score):
         # Determine the trust ranking based on the score
@@ -221,7 +219,7 @@ class PhishingDetector:
             return "Seems Phishy. Not Authentic."
 
         
- # the function that validates a url       
+# the function that validates a url       
 if not validators.url(UrlLink):
     print("Invalid URL format")
 else:
