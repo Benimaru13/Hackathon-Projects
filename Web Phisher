@@ -1,0 +1,138 @@
+import random, math, time
+from urllib.parse import urlparse
+import openai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+link_split = ["https://", "http://", "www.", ".com", ".net", ".org", ".io", ".co", ".info", ".biz"]
+# Phishing Detector
+# Idea s...ingenuity, prototype
+
+AUTHENTIC_WEBSITES_LIST = [
+    "google.com", "youtube.com", "facebook.com", "instagram.com", "chatgpt.com", "x.com",
+      "whatsapp.com", "wikipedia.org", "reddit.com", "yahoo.co.jp", "yahoo.com", "yandex.ru",
+      "tiktok.com", "amazon.com", "baidu.com", "bet.br", "microsoftonline.com", "linkedin.com",
+      "netflix.com", "naver.com", "live.com", "dzen.ru", "office.com", "bing.com", "temu.com",
+      "pinterest.com", "bilibili.com", "microsoft.com", "twitch.tv", "vk.com", "mail.ru", 
+      "news.yahoo.co.jp", "sharepoint.com", "fandom.com", "globo.com", "canva.com", "weather.com",
+      "samsung.com", "t.me", "duckduckgo.com", "nytimes.com", "zoom.us", "spotify.com", "discord.com",
+      "apple.com", "imdb.com"
+
+]
+UrlLink
+# global variables
+# Boolean Variables
+is_safe = True
+is_notsafe = False
+
+UrlLink = input("Input the suspicious text.")
+"""
+# Example of using OpenAI API to get information about phishing
+openai.api_key = 'your-api-key-here'
+
+response = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "user", "content": "What is phishing?"},
+    ]
+)
+
+print(response['choices'][0]['message']['content'])
+"""
+
+#c
+class PhishingDetector:
+    def __init__(self, URL):
+        self.url = URL
+        self.parsed_link = self.url.split(".")
+
+    def parse_url(url):
+        parsed = urlparse(normalize_url(url))
+        print("Scheme (http or https):", parsed.scheme)
+        print("Domain:", parsed.netloc)
+        print("Path:", parsed.path)
+        print("Query Params:", parsed.query)
+        return parsed
+
+         
+    def scrutinize(self):
+        if is_authentic():
+            return is_safe
+        else:
+            prefix_score = self.prefix_checker(self.url)
+            tld_score = self.TLD_checker()
+            ip_score = self.IP_address_checker()
+            length_score = self.length_checker()
+            # Calculate the final score
+            final_score = (prefix_score + tld_score + ip_score + length_score) / 4
+            # Determine if the URL is phishing based on the final score
+            if final_score < 2:
+                return is_notsafe
+            else:
+                return is_safe
+            
+        
+
+    def is_authentic(self):
+        return self.url in AUTHENTIC_WEBSITES_LIST
+    
+    def prefix_checker(self, url):
+        parsed = urlparse(url)
+        scheme = parsed.scheme.lower()
+
+        if scheme == "http":
+            return 1
+        elif scheme == "https":
+            if random.random() < 0.6:
+                return 3
+            else:
+                return 5
+        else:
+            return 1  # fallback for unusual schemes like ftp or blank
+
+    def TLD_checker(self):
+        parsed = urlparse(self.url)
+        domain = parsed.netloc
+        tld = domain.split(".")[-1]
+
+        if tld in ["com", "net", "org", "io", "co"]:
+            return 3
+        elif tld in ["info", "biz"]:
+            return 2
+        else:
+            return 1
+        
+    def IP_address_checker(self):
+        parsed = urlparse(self.url)
+        domain = parsed.netloc
+        if domain.replace(".", "").isdigit():
+            return 1
+        else:
+            return 3
+
+    def length_checker(self):
+        parsed = urlparse(self.url)
+        length = len(parsed.path)
+        if length < 20:
+            return 3
+        elif length < 50:
+            return 2
+        else:
+            return 1
+        
+
+        """"   
+        prefix_checker()
+        TLD_checker()
+        IP_address_checker()
+        length_checker()
+        """
+    
+        
+        
+
+checker = PhisingDetector(UrlLink)
+result = checker.scrutinize(URL)
+print(result)
