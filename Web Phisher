@@ -21,7 +21,7 @@ AUTHENTIC_WEBSITES_LIST = [
       "apple.com", "imdb.com"
 
 ]
-UrlLink
+
 # global variables
 # Boolean Variables
 is_safe = True
@@ -41,7 +41,9 @@ response = openai.ChatCompletion.create(
 
 print(response['choices'][0]['message']['content'])
 """
-
+def normalize_url()
+def is_authentic():
+    is_safe = True
 #c
 class PhishingDetector:
     def __init__(self, URL):
