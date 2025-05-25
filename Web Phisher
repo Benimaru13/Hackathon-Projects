@@ -139,6 +139,6 @@ class PhishingDetector:
         
         
 
-checker = PhisingDetector(UrlLink)
+checker = PhishingDetector(UrlLink)
 result = checker.scrutinize(URL)
 print(result)
