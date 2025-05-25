@@ -44,10 +44,10 @@ response = openai.ChatCompletion.create(
 
 print(response['choices'][0]['message']['content'])
 """
-def normalize_url():
-    break
-def urlparse(self):
-    break 
+def normalize_url(url):
+    pass
+def urlparse():
+    pass 
 
 class PhishingDetector:
     def __init__(self, URL):
@@ -63,9 +63,18 @@ class PhishingDetector:
         print("Query Params:", parsed.query)
         return parsed
 
-         
+    def normalize_url(self, url):
+        # Normalize the URL by removing common prefixes
+        for prefix in link_split:
+            if url.startswith(prefix):
+                url = url[len(prefix):]
+                break
+        return url   
+     
     def scrutinize(self):
-        if is_authentic:
+        if self.url in AUTHENTIC_WEBSITES_LIST:
+            # Check if the URL is in the list of authentic websites
+            self.is_authentic = True
             return is_safe
         else:
             prefix_score = self.prefix_checker(self.url)
@@ -80,36 +89,44 @@ class PhishingDetector:
             else:
                 return is_safe        
         
-
-    def is_authentic(self):
-        return self.url in AUTHENTIC_WEBSITES_LIST
     
     def prefix_checker(self, url):
         parsed = urlparse(url)
-        scheme = parsed.scheme.lower()
-
-        if scheme == "http":
-            return 1
-        elif scheme == "https":
-            if random.random() < 0.6:
-                return 3
+        try:
+            scheme = parsed.scheme.lower()
+            if scheme == "http":
+                return 1
+            elif scheme == "https":
+                if random.random() < 0.6:
+                    return 3
+                else:
+                    return 5
             else:
-                return 5
-        else:
-            return 1  # fallback for unusual schemes like ftp or blank
+                return 1  # fallback for unusual schemes like ftp or blank
+        except AttributeError:
+            return 1
+            log = "Error: Invalid URL format"
+            print(log)
 
+    # Check the TLD of the URL   
     def TLD_checker(self):
         parsed = urlparse(self.url)
-        domain = parsed.netloc
-        tld = domain.split(".")[-1]
+        try:
+            domain = parsed.netloc
+            tld = domain.split(".")[-1]
 
-        if tld in ["com", "net", "org", "io", "co"]:
-            return 3
-        elif tld in ["info", "biz"]:
-            return 2
-        else:
+            if tld in ["com", "net", "org", "io", "co"]:
+                return 3
+            elif tld in ["info", "biz"]:
+                return 2
+            else:
+                return 1
+        except AttributeError:
             return 1
-        
+            log = "Error: Invalid URL format"
+            print(log)
+    
+    # Check if the URL contains an IP address    
     def IP_address_checker(self):
         parsed = urlparse(self.url)
         domain = parsed.netloc
@@ -140,5 +157,7 @@ class PhishingDetector:
         
 
 checker = PhishingDetector(UrlLink)
-result = checker.scrutinize(URL)
+result = checker.parse_url()
+if result.is_authentic:
+    print("The URL is authentic.")
 print(result)
