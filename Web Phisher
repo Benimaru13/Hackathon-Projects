@@ -75,6 +75,7 @@ class PhishingDetector:
             # Calculate the final score
             final_score = (prefix_score + tld_score + ip_score + length_score) / 4
             # Determine if the URL is phishing based on the final score
+            final_score = round(final_score, 2)
             if final_score < 2:
                 self.is_safe = False
                 log = "The URL is phishing."
@@ -83,7 +84,7 @@ class PhishingDetector:
                 self.is_safe = True
                 log = "The URL is safe."
                 print(log) 
-        return self.is_safe, "This URL is authentic."      
+        return self.is_safe, str(final_score) + " out of 4.0", log      
         
     
     def prefix_checker(self, url):
@@ -94,9 +95,9 @@ class PhishingDetector:
                 return 1
             elif scheme == "https":
                 if random.random() < 0.6:
-                    return 3
+                    return 1.5
                 else:
-                    return 5
+                    return 2
             else:
                 return 1  # fallback for unusual schemes like ftp or blank
         except AttributeError:
@@ -112,9 +113,9 @@ class PhishingDetector:
             tld = domain.split(".")[-1]
 
             if tld in ["com", "net", "org", "io", "co"]:
-                return 3
-            elif tld in ["info", "biz"]:
                 return 2
+            elif tld in ["info", "biz"]:
+                return 1.5
             else:
                 return 1
         except AttributeError:
@@ -129,15 +130,15 @@ class PhishingDetector:
         if domain.replace(".", "").isdigit():
             return 1
         else:
-            return 3
+            return 2
 
     def length_checker(self):
         parsed = urlparse(self.url)
         length = len(parsed.path)
         if length < 20:
-            return 3
-        elif length < 50:
             return 2
+        elif length < 50:
+            return 1.5
         else:
             return 1
         
@@ -157,4 +158,5 @@ result = checker.parse_url()
 Phish = checker.scrutinize()
 print("Phishing Status:", Phish[0])
 print("Phishing Status:", Phish[1])
+print("Phishing Status:", Phish[2])
 print(result)
