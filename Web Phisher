@@ -46,11 +46,6 @@ print(response['choices'][0]['message']['content'])
 """
 def normalize_url():
     break
-def is_authentic():
-    is_safe = True
-    break 
-def PhishingDetector(self):
-    break
 def urlparse(self):
     break 
 
@@ -58,6 +53,7 @@ class PhishingDetector:
     def __init__(self, URL):
         self.url = URL
         self.parsed_link = self.url.split(".")
+        self.is_authentic = False
 
     def parse_url(url):
         parsed = urlparse(normalize_url(url))
@@ -69,7 +65,7 @@ class PhishingDetector:
 
          
     def scrutinize(self):
-        if is_authentic():
+        if is_authentic:
             return is_safe
         else:
             prefix_score = self.prefix_checker(self.url)
