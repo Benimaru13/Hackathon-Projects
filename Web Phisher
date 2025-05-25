@@ -8,8 +8,11 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 link_split = ["https://", "http://", "www.", ".com", ".net", ".org", ".io", ".co", ".info", ".biz"]
 # Phishing Detector
-# Idea s...ingenuity, prototype
-
+# Idea s...ingenuity, prototypes
+# SCALE: 1-5
+# if less than pass: NOT RELIABLE AT ALLL 
+# if barely pass: then less reliable 
+# if pass well: then alr, reliable
 AUTHENTIC_WEBSITES_LIST = [
     "google.com", "youtube.com", "facebook.com", "instagram.com", "chatgpt.com", "x.com",
       "whatsapp.com", "wikipedia.org", "reddit.com", "yahoo.co.jp", "yahoo.com", "yandex.ru",
@@ -41,10 +44,16 @@ response = openai.ChatCompletion.create(
 
 print(response['choices'][0]['message']['content'])
 """
-def normalize_url()
+def normalize_url():
+    break
 def is_authentic():
     is_safe = True
-#c
+    break 
+def PhishingDetector(self):
+    break
+def urlparse(self):
+    break 
+
 class PhishingDetector:
     def __init__(self, URL):
         self.url = URL
@@ -73,8 +82,7 @@ class PhishingDetector:
             if final_score < 2:
                 return is_notsafe
             else:
-                return is_safe
-            
+                return is_safe        
         
 
     def is_authentic(self):
