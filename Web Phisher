@@ -27,8 +27,7 @@ AUTHENTIC_WEBSITES_LIST = [
 
 # global variables
 # Boolean Variables
-is_safe = True
-is_notsafe = False
+
 
 UrlLink = input("Input the suspicious text.")
 """
@@ -49,29 +48,25 @@ class PhishingDetector:
     def __init__(self, URL):
         self.url = URL
         self.parsed_link = self.url.split(".")
-        self.is_authentic = False
+        self.is_safe = True
 
+    # parses the URL and extracts components
+    # such as scheme, domain, path, and query parameters
     def parse_url(self):
+        global parsed
         parsed = urlparse(self.url)
         print("Scheme (http or https):", parsed.scheme)
         print("Domain:", parsed.netloc)
         print("Path:", parsed.path)
         print("Query Params:", parsed.query)
-        return parsed
+        return parsed 
 
-    def normalize_url(self, url):
-        # Normalize the URL by removing common prefixes
-        for prefix in link_split:
-            if url.startswith(prefix):
-                url = url[len(prefix):]
-                break
-        return url   
-     
+    # Scrutinizes the URL to determine if it is phishing
+    # or not based on various checks 
     def scrutinize(self):
-        if self.url in AUTHENTIC_WEBSITES_LIST:
+        if parsed.netloc in AUTHENTIC_WEBSITES_LIST:
             # Check if the URL is in the list of authentic websites
-            self.is_authentic = True
-            return is_safe
+            self.is_safe = True
         else:
             prefix_score = self.prefix_checker(self.url)
             tld_score = self.TLD_checker()
@@ -81,9 +76,14 @@ class PhishingDetector:
             final_score = (prefix_score + tld_score + ip_score + length_score) / 4
             # Determine if the URL is phishing based on the final score
             if final_score < 2:
-                return is_notsafe
+                self.is_safe = False
+                log = "The URL is phishing."
+                print(log)
             else:
-                return is_safe        
+                self.is_safe = True
+                log = "The URL is safe."
+                print(log) 
+        return self.is_safe, "This URL is authentic."      
         
     
     def prefix_checker(self, url):
@@ -154,6 +154,7 @@ class PhishingDetector:
 
 checker = PhishingDetector(UrlLink)
 result = checker.parse_url()
-if checker.is_authentic:
-    print("The URL is authentic.")
+Phish = checker.scrutinize()
+print("Phishing Status:", Phish[0])
+print("Phishing Status:", Phish[1])
 print(result)
