@@ -44,10 +44,6 @@ response = openai.ChatCompletion.create(
 
 print(response['choices'][0]['message']['content'])
 """
-def normalize_url(url):
-    pass
-def urlparse():
-    pass 
 
 class PhishingDetector:
     def __init__(self, URL):
@@ -55,8 +51,8 @@ class PhishingDetector:
         self.parsed_link = self.url.split(".")
         self.is_authentic = False
 
-    def parse_url(url):
-        parsed = urlparse(normalize_url(url))
+    def parse_url(self):
+        parsed = urlparse(self.url)
         print("Scheme (http or https):", parsed.scheme)
         print("Domain:", parsed.netloc)
         print("Path:", parsed.path)
@@ -158,6 +154,6 @@ class PhishingDetector:
 
 checker = PhishingDetector(UrlLink)
 result = checker.parse_url()
-if result.is_authentic:
+if checker.is_authentic:
     print("The URL is authentic.")
 print(result)
