@@ -45,7 +45,6 @@ AUTHENTIC_WEBSITES_LIST = [
         "goair.in", "indigo.in", "airasia.com", "makemytrip.com", "cleartrip.com", "yatra.com",
         "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org", "python.org"] 
 
-
 SUS_PATTERNS = ["login", "secure", "update", "verify", "account", "confirm", "login", "signin", "signup", "register", "profile", "settings", "admin",
     "dashboard", "payment", "checkout", "cart", "order", "invoice", "receipt", "transaction", 
     "webmail", "validation", "auth", "authentication", "support", "security", "signin", "signup", "password", "banking", 
@@ -55,6 +54,21 @@ SUS_PATTERNS = ["login", "secure", "update", "verify", "account", "confirm", "lo
     "last-chance", "urgent", "immediate-action", "act-now", "limited-time", "exclusive-offer", "special-deal",
     "free-gift", "prize", "reward", "win", "lottery", "sweepstakes", "giveaway", "contest", "raffle"]
 
+credible_tlds = ["com", "org", "net", "edu", "gov",
+    "mil", "int", "ca", "de", "uk",
+    "fr", "jp", "au", "us", "ch",
+    "nl", "in", "it", "es", "se"]
+
+less_credible_tlds = ["info", "biz", "co", "me", "tv",
+    "cc", "xyz", "site", "online", "store",
+    "app", "io", "cloud", "pro", "tech"]
+
+sus_tlds  = [
+    "tk", "ml", "ga", "cf", "gq",
+    "top", "work", "support", "click", "review",
+    "zip", "cam", "party", "loan", "download",
+    "stream", "men", "host", "faith", "accountants"
+    ]
 
 # The weights for each checker
 # These weights are used to calculate the final score
@@ -69,29 +83,29 @@ CHECKER_WEIGHTS = {
 }
 
 OPENAI_API_KEY = os.getenv("")
+
 BlackList = []
-# global variables
-# Boolean Variables
-
-
+# Get the URL to validate from the user
+print("Welcome to Web Phish!")
 UrlLink = input("Enter the URL to validate (start with http://): ")
 
 print("Validating URL:", UrlLink)
 
 # Helper Functions
-
 def get_base_domain(netloc):
+    # Extracts the base domain from the netloc
     domain = netloc.split(':')[0]
     parts = domain.split('.')
     if len(parts) > 2:
         domain = '.'.join(parts[-2:])
     return domain
 
-
+# Function to get WHOIS information and calculate the age of the domain
 def get_whois_info(url):
     try:
         domain = urlparse(url).netloc
         whois_info = whois.whois(domain)
+        owner_name = whois_info.owner
         age = whois_info.creation_date
         if age:
             age = age[0] if isinstance(age, list) else age
@@ -100,7 +114,7 @@ def get_whois_info(url):
             elif isinstance(age, int):
                 age = time.localtime(age)
             else:
-                return 0.50
+                return 0.40
             current_time = time.localtime()
             age_in_days = (time.mktime(current_time) - time.mktime(age)) / (24 * 3600)
             if age_in_days < 30:
@@ -110,10 +124,10 @@ def get_whois_info(url):
             else:
                 return 1.0
         else:
-            return 0.50
+            return 0.40
     except Exception as e:
         print(f"Error fetching WHOIS info: {e}")
-        return 0.50
+        return 0.40
 
 
 # PhishingDetector Class
@@ -123,29 +137,30 @@ class PhishingDetector:
         self.parsed = urlparse(self.url)
         self.is_safe = True
         self.weights = CHECKER_WEIGHTS
+        # Initialize scores for each checker
         self.p_score = 1
         self.t_score = 1    
         self.d_score = 1
         self.w_score = 1
+
     # parses the URL and extracts components
     # such as scheme, domain, path, and query parameters
     def parse_url(self):
         return self.parsed
 
-    # Scrutinizes the URL to determine if it is phishing
-    # or not based on various checks 
+    # identifies the tests that will be run based on the scores
+    # and prints the results of each test
     def identify_tests(self, p_score, t_score, d_score, w_score):
-        # Identify the tests that will be run
         print("Running tests on the URL...")
-        score_map = {p_score: "Prefix_score", t_score:"TLD_source", d_score:"Domain_source", w_score:"Whois_age_score"}
-        for test_score in score_map.keys():
-            if test_score >= 0.75:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 0.75.")
-            elif test_score >= 0.5 and test_score < 0.75:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 0.50, but it is a bit sketchy.")
-            elif test_score < 0.5:
-                print(f"Test case {score_map[test_score]} failed with {test_score} out of 0.50, it is very sketchy.")
-
+        score_map = {p_score: ("Prefix_score", 0.50) , t_score:("TLD_score", 0.50), d_score:("Domain_score", 3.00), w_score:("Whois_age_score", 0.75)}
+        for score, (test_name, max_score) in score_map.items():
+            if score >= (0.75*max_score):
+                print(f"{test_name} passed with {score} out of {max_score}.")
+            elif score >= (max_score / 2):
+                print(f"{test_name} passed with {score} out of {max_score}, but it is a bit sketchy.")
+            else:
+                print(f"{test_name} failed with {score} out of {max_score}, it is very sketchy.")
+        
     def scrutinize(self):
         base_domain = get_base_domain(self.parsed.netloc)
         if base_domain in AUTHENTIC_WEBSITES_LIST or self.parsed.netloc in AUTHENTIC_WEBSITES_LIST:
@@ -223,27 +238,9 @@ class PhishingDetector:
                 return 0.50  # fallback for unusual schemes like ftp or blank
         except AttributeError:
             return 0.25
-            log = "Error: Invalid URL format"
-            print(log)
 
     # Check the TLD of the URL   
-    def TLD_checker(self):
-        credible_tlds = ["com", "org", "net", "edu", "gov",
-            "mil", "int", "ca", "de", "uk",
-            "fr", "jp", "au", "us", "ch",
-            "nl", "in", "it", "es", "se"]
-        
-        less_credible_tlds = ["info", "biz", "co", "me", "tv",
-            "cc", "xyz", "site", "online", "store",
-            "app", "io", "cloud", "pro", "tech"]
-        
-        sus_tlds  = [
-            "tk", "ml", "ga", "cf", "gq",
-            "top", "work", "support", "click", "review",
-            "zip", "cam", "party", "loan", "download",
-            "stream", "men", "host", "faith", "accountants"
-            ]
-        
+    def TLD_checker(self):     
         domain = self.parsed.netloc
         if not domain:
             return 0.25
@@ -301,7 +298,7 @@ class PhishingDetector:
             
     def suspicious_checker(self):
         # Check for suspicious patterns in the URL    
-        for pattern in sus_patterns:
+        for pattern in SUS_PATTERNS:
             if pattern in self.parsed.path.lower():
                 return 0.25
         return 1.0 # If no suspicious patterns found, return a higher score
@@ -319,12 +316,9 @@ class PhishingDetector:
                 return "Seems Phishy. Not Authentic."
         else:
             return "Error: Invalid score"
-            log = "Error: Invalid score"
-            print(log)
 
-        
-# the function that validates a url    
 
+# Main Execution
 # Check if the URL is empty or invalid
 if not UrlLink:
     print("URL is empty")
@@ -336,7 +330,7 @@ else:
     Phish = checker.scrutinize()
     checker.identify_tests(checker.p_score, checker.t_score, checker.d_score, checker.w_score)
     print("Phishing Status:", Phish[0])
-    print("Phishing Status:", Phish[1])
+    print("Phishing Score:", Phish[1])
     print("Phishing Status:", Phish[2])
     
     print(result)
