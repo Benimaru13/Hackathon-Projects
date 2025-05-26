@@ -70,3 +70,7 @@ Here is a detailed and formal summary of my work.
 This tool is for educational and prototyping purposes only. It should not be relied upon as a sole defense against phishing in production environments.
 
 ---
+Here is the Web Phish Logo.
+![image](https://github.com/user-attachments/assets/312cf4a0-47fd-429d-9dbb-480b95ce2714)
+The Tagline is Think Twice. Click Once.
+
