@@ -43,8 +43,9 @@ AUTHENTIC_WEBSITES_LIST = [
         "cleartrip.com", "goibibo.com", "yatra.com", "redbus.in", "cleartrip.com",
         "indigoairlines.in", "spicejet.com", "airindia.in", "jetairways.com", "vistara.com",
         "goair.in", "indigo.in", "airasia.com", "makemytrip.com", "cleartrip.com", "yatra.com",
-        "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org"
-]
+        "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org", "python.org"] 
+
+
 sus_patterns = ["login", "secure", "update", "verify", "account", "confirm", "login", "signin", "signup", "register", "profile", "settings", "admin",
     "dashboard", "payment", "checkout", "cart", "order", "invoice", "receipt", "transaction", 
     "webmail", "validation", "auth", "authentication", "support", "security", "signin", "signup", "password", "banking", 
@@ -52,7 +53,7 @@ sus_patterns = ["login", "secure", "update", "verify", "account", "confirm", "lo
     "alert", "warning", "error", "issue", "problem", "suspicious", "phishing", "scam", "fraud", "malware",
     "virus", "trojan", "ransomware", "spyware", "adware", "keylogger", "hacker", "hack", "breach", "compromise",
     "last-chance", "urgent", "immediate-action", "act-now", "limited-time", "exclusive-offer", "special-deal",
-    "free-gift", "prize", "reward", "win", "lottery", "sweepstakes", "giveaway", "contest", "raffle",]
+    "free-gift", "prize", "reward", "win", "lottery", "sweepstakes", "giveaway", "contest", "raffle"]
 
 
 # The weights for each checker
@@ -99,17 +100,17 @@ def get_whois_info(url):
             elif isinstance(age, int):
                 age = time.localtime(age)
             else:
-                return 0.25
+                return 0.50
             current_time = time.localtime()
             age_in_days = (time.mktime(current_time) - time.mktime(age)) / (24 * 3600)
             if age_in_days < 30:
                 return 0.25
             elif age_in_days < 365:
-                return 0.70
+                return 0.50
             else:
                 return 1.0
         else:
-            return 0.25
+            return 0.50
     except Exception as e:
         print(f"Error fetching WHOIS info: {e}")
         return 0.50
@@ -147,7 +148,7 @@ class PhishingDetector:
 
     def scrutinize(self):
         base_domain = get_base_domain(self.parsed.netloc)
-        if base_domain in AUTHENTIC_WEBSITES_LIST:
+        if base_domain in AUTHENTIC_WEBSITES_LIST or self.parsed.netloc in AUTHENTIC_WEBSITES_LIST:
             # Check if the URL is in the list of authentic websites
             self.is_safe = True
             final_score = 4.0
@@ -227,6 +228,22 @@ class PhishingDetector:
 
     # Check the TLD of the URL   
     def TLD_checker(self):
+        credible_tlds = ["com", "org", "net", "edu", "gov",
+            "mil", "int", "ca", "de", "uk",
+            "fr", "jp", "au", "us", "ch",
+            "nl", "in", "it", "es", "se"]
+        
+        less_credible_tlds = ["info", "biz", "co", "me", "tv",
+            "cc", "xyz", "site", "online", "store",
+            "app", "io", "cloud", "pro", "tech"]
+        
+        sus_tlds  = [
+            "tk", "ml", "ga", "cf", "gq",
+            "top", "work", "support", "click", "review",
+            "zip", "cam", "party", "loan", "download",
+            "stream", "men", "host", "faith", "accountants"
+            ]
+        
         domain = self.parsed.netloc
         if not domain:
             return 0.25
@@ -234,13 +251,15 @@ class PhishingDetector:
         if not tld:
             return 0.25
         # check for common TLDs
-        if tld in ["com", "net", "org", "io", "co"]:
+        if tld in credible_tlds:
             return 1.0
+        
         # check for less common TLDs
-        elif tld in ["info", 'biz', 'xyz', 'top']:
-            return 0.70
+        elif tld in less_credible_tlds:
+            return 0.75
+        
         # check for sketchy TLDs
-        elif tld in ["tk", "ga", "cf", "gq", "ml"]:
+        elif tld in sus_tlds:
             return 0.25
         else:
             return 0.50
