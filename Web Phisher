@@ -43,7 +43,7 @@ AUTHENTIC_WEBSITES_LIST = [
         "cleartrip.com", "goibibo.com", "yatra.com", "redbus.in", "cleartrip.com",
         "indigoairlines.in", "spicejet.com", "airindia.in", "jetairways.com", "vistara.com",
         "goair.in", "indigo.in", "airasia.com", "makemytrip.com", "cleartrip.com", "yatra.com",
-        "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "doc.python.org"
+        "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org"
 ]
 
 BlackList = []
@@ -111,6 +111,20 @@ class PhishingDetector:
 
     # Scrutinizes the URL to determine if it is phishing
     # or not based on various checks 
+    def identify_tests(self):
+        prefix_score = self.prefix_checker(self.url)
+        tld_score = self.TLD_checker()
+        domain_score = self.domain_heuristics()
+        whois_age_score = get_whois_info(self.url)
+        score_map = {prefix_score: "Prefix_score", tld_score:"TLD_source", domain_score:"Domain_source", whois_age_score:"Whois_age_score"}
+        for test_score in score_map.keys():
+            if test_score >= 2.5:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 4.0.")
+            elif test_score < 2.5 and test_score >= 1.5:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 4.0, but it is a bit sketchy.")
+            elif test_score < 1.5:
+                print(f"Test case {score_map[test_score]} failed with {test_score} out of 4.0, it is very sketchy.")
+
     def scrutinize(self):
         base_domain = get_base_domain(self.parsed.netloc)
         if base_domain in AUTHENTIC_WEBSITES_LIST:
@@ -128,6 +142,7 @@ class PhishingDetector:
             tld_score = self.TLD_checker()
             domain_score = self.domain_heuristics()
             whois_age_score = get_whois_info(self.url)
+                
             # Calculate the final score
             final_score = (prefix_score + tld_score + domain_score + whois_age_score) / 4
             # Determine if the URL is phishing based on the final score
@@ -261,9 +276,11 @@ elif not validators.url(UrlLink):
 else:
     checker = PhishingDetector(UrlLink)
     result = checker.parse_url()
+    checker.identify_tests()
     Phish = checker.scrutinize()
     print("Phishing Status:", Phish[0])
     print("Phishing Status:", Phish[1])
     print("Phishing Status:", Phish[2])
-    # print(result)
+    
+    print(result)
     # print(f"BlackList: {BlackList}")
