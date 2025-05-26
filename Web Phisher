@@ -139,12 +139,12 @@ class PhishingDetector:
         print("Running tests on the URL...")
         score_map = {p_score: "Prefix_score", t_score:"TLD_source", d_score:"Domain_source", w_score:"Whois_age_score"}
         for test_score in score_map.keys():
-            if test_score > 0.75:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 1.0.")
-            elif test_score >= 0.5 and test_score <= 0.75:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 1.0, but it is a bit sketchy.")
+            if test_score >= 0.75:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 0.75.")
+            elif test_score >= 0.5 and test_score < 0.75:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 0.50, but it is a bit sketchy.")
             elif test_score < 0.5:
-                print(f"Test case {score_map[test_score]} failed with {test_score} out of 1.0, it is very sketchy.")
+                print(f"Test case {score_map[test_score]} failed with {test_score} out of 0.50, it is very sketchy.")
 
     def scrutinize(self):
         base_domain = get_base_domain(self.parsed.netloc)
@@ -205,7 +205,7 @@ class PhishingDetector:
 
         criteria = [ip_score, length_score, random_char_score, sus_score]
         criteria = [x for x in criteria if x is not None]
-        domain_score = sum(criteria) / len(criteria)
+        domain_score = sum(criteria)
         return domain_score
 
     
@@ -279,7 +279,7 @@ class PhishingDetector:
             if length > 50:
                 return 0.25
             else:
-                return 0.44
+                return 0.50
         else:
             return 1.0
 
