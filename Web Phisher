@@ -213,11 +213,11 @@ class PhishingDetector:
     def trust_ranking(self, score):
         # Determine the trust ranking based 
         if score:
-            if score > 4.5:
+            if score > 3.5:
                 return "Very Authentic."
-            elif score > 3.5:
-                return "A bit sketchy. But still reliable."
             elif score > 2.5:
+                return "A bit sketchy. But still reliable."
+            elif score > 1.5:
                 return "Very sketchy. Not Authentic."
             else:
                 return "Seems Phishy. Not Authentic."
