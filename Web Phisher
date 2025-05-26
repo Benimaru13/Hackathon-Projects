@@ -18,8 +18,32 @@ AUTHENTIC_WEBSITES_LIST = [
       "pinterest.com", "bilibili.com", "microsoft.com", "twitch.tv", "vk.com", "mail.ru", 
       "news.yahoo.co.jp", "sharepoint.com", "fandom.com", "globo.com", "canva.com", "weather.com",
       "samsung.com", "t.me", "duckduckgo.com", "nytimes.com", "zoom.us", "spotify.com", "discord.com",
-      "apple.com", "imdb.com"
-
+      "apple.com", "imdb.com", "docker.com", "ebay.com", "aliexpress.com", "bbc.com",
+      "stackoverflow.com", "quora.com", "github.com", "paypal.com", "adobe.com", "wordpress.org",
+        "etsy.com", "cnn.com", "bbc.co.uk", "theguardian.com", "huffpost.com", "forbes.com",
+        "buzzfeed.com", "usatoday.com", "reuters.com", "cnet.com", "techcrunch.com", "wired.com",
+        "theverge.com", "engadget.com", "arstechnica.com", "gizmodo.com", "venturebeat.com",
+        "mashable.com", "businessinsider.com", "bloomberg.com", "ft.com", "wsj.com", "nytimes.com",
+        "theatlantic.com", "vox.com", "slate.com", "politico.com", "axios.com", "buzzfeednews.com",
+        "thehill.com", "nationalgeographic.com", "history.com", "smithsonianmag.com", "scientificamerican.com",
+        "nature.com", "sciencemag.org", "livescience.com", "space.com", "newscientist.com",
+        "popularmechanics.com", "wired.co.uk", "gizmodo.co.uk", "techradar.com", "cnet.co.uk",
+        "thetimes.co.uk", "telegraph.co.uk", "independent.co.uk", "mirror.co.uk", "dailymail.co.uk",
+        "theguardian.co.uk", "bbc.co.uk", "sky.com", "itv.com", "channel4.com", "channel5.com",
+        "metro.co.uk", "eveningstandard.co.uk", "thetimesofindia.com", "hindustantimes.com",
+        "thehindu.com", "indianexpress.com", "timesnownews.com", "ndtv.com", "moneycontrol.com",
+        "business-standard.com", "livemint.com", "firstpost.com", "news18.com", "zomato.com",
+        "swiggy.com", "flipkart.com", "snapdeal.com", "paytm.com", "olx.in", "quikr.com",
+        "bookmyshow.com", "irctc.co.in", "makeMyTrip.com", "cleartrip.com", "goibibo.com",
+        "yatra.com", "redbus.in", "cleartrip.com", "indigoairlines.in", "spicejet.com",
+        "airindia.in", "jetairways.com", "vistara.com", "goair.in", "indigo.in", "airasia.com",
+        "makemytrip.com", "cleartrip.com", "yatra.com", "redbus.in", "goibibo.com",
+        "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "snapdeal.com",
+        "paytm.com", "olx.in", "quikr.com", "bookmyshow.com", "irctc.co.in", "makeMyTrip.com",
+        "cleartrip.com", "goibibo.com", "yatra.com", "redbus.in", "cleartrip.com",
+        "indigoairlines.in", "spicejet.com", "airindia.in", "jetairways.com", "vistara.com",
+        "goair.in", "indigo.in", "airasia.com", "makemytrip.com", "cleartrip.com", "yatra.com",
+        "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "doc.python.org"
 ]
 
 BlackList = []
