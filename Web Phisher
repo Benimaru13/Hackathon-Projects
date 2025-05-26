@@ -46,7 +46,7 @@ AUTHENTIC_WEBSITES_LIST = [
         "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org", "python.org"] 
 
 
-sus_patterns = ["login", "secure", "update", "verify", "account", "confirm", "login", "signin", "signup", "register", "profile", "settings", "admin",
+SUS_PATTERNS = ["login", "secure", "update", "verify", "account", "confirm", "login", "signin", "signup", "register", "profile", "settings", "admin",
     "dashboard", "payment", "checkout", "cart", "order", "invoice", "receipt", "transaction", 
     "webmail", "validation", "auth", "authentication", "support", "security", "signin", "signup", "password", "banking", 
     "creditcard", "paypal", "stripe", "checkout", "cart", "order", "invoice", "receipt", "transaction",
@@ -68,7 +68,7 @@ CHECKER_WEIGHTS = {
     "whois_age": 0.75
 }
 
-
+OPENAI_API_KEY = os.getenv("")
 BlackList = []
 # global variables
 # Boolean Variables
