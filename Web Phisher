@@ -45,6 +45,28 @@ AUTHENTIC_WEBSITES_LIST = [
         "goair.in", "indigo.in", "airasia.com", "makemytrip.com", "cleartrip.com", "yatra.com",
         "redbus.in", "goibibo.com", "bookmyshow.com", "zomato.com", "swiggy.com", "flipkart.com", "docs.python.org"
 ]
+sus_patterns = ["login", "secure", "update", "verify", "account", "confirm", "login", "signin", "signup", "register", "profile", "settings", "admin",
+    "dashboard", "payment", "checkout", "cart", "order", "invoice", "receipt", "transaction", 
+    "webmail", "validation", "auth", "authentication", "support", "security", "signin", "signup", "password", "banking", 
+    "creditcard", "paypal", "stripe", "checkout", "cart", "order", "invoice", "receipt", "transaction",
+    "alert", "warning", "error", "issue", "problem", "suspicious", "phishing", "scam", "fraud", "malware",
+    "virus", "trojan", "ransomware", "spyware", "adware", "keylogger", "hacker", "hack", "breach", "compromise",
+    "last-chance", "urgent", "immediate-action", "act-now", "limited-time", "exclusive-offer", "special-deal",
+    "free-gift", "prize", "reward", "win", "lottery", "sweepstakes", "giveaway", "contest", "raffle",]
+
+
+# The weights for each checker
+# These weights are used to calculate the final score
+CHECKER_WEIGHTS = {
+    "prefix": 0.40,
+    "tld": 0.40,
+    "ip": 0.6,
+    "length": 0.40,
+    "random_char": 0.6,
+    "suspicious": 0.80,
+    "whois_age": 0.80
+}
+
 
 BlackList = []
 # global variables
@@ -77,17 +99,17 @@ def get_whois_info(url):
             elif isinstance(age, int):
                 age = time.localtime(age)
             else:
-                return 1
+                return 0.25
             current_time = time.localtime()
             age_in_days = (time.mktime(current_time) - time.mktime(age)) / (24 * 3600)
             if age_in_days < 30:
-                return 1
+                return 0.25
             elif age_in_days < 365:
-                return 2
+                return 0.5
             else:
-                return 3
+                return 0.75
         else:
-            return 1
+            return 0.25
     except Exception as e:
         print(f"Error fetching WHOIS info: {e}")
         return 1
@@ -99,31 +121,29 @@ class PhishingDetector:
         self.url = URL
         self.parsed = urlparse(self.url)
         self.is_safe = True
-
+        self.weights = CHECKER_WEIGHTS
+        self.p_score = 1
+        self.t_score = 1    
+        self.d_score = 1
+        self.w_score = 1
     # parses the URL and extracts components
     # such as scheme, domain, path, and query parameters
     def parse_url(self):
-        # print("Scheme (http or https):", self.parsed.scheme)
-        # print("Domain:", self.parsed.netloc)
-        # print("Path:", self.parsed.path)
-        # print("Query Params:", self.parsed.query)
         return self.parsed
 
     # Scrutinizes the URL to determine if it is phishing
     # or not based on various checks 
-    def identify_tests(self):
-        prefix_score = self.prefix_checker(self.url)
-        tld_score = self.TLD_checker()
-        domain_score = self.domain_heuristics()
-        whois_age_score = get_whois_info(self.url)
-        score_map = {prefix_score: "Prefix_score", tld_score:"TLD_source", domain_score:"Domain_source", whois_age_score:"Whois_age_score"}
+    def identify_tests(self, p_score, t_score, d_score, w_score):
+        # Identify the tests that will be run
+        print("Running tests on the URL...")
+        score_map = {p_score: "Prefix_score", t_score:"TLD_source", d_score:"Domain_source", w_score:"Whois_age_score"}
         for test_score in score_map.keys():
-            if test_score >= 2.5:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 4.0.")
-            elif test_score < 2.5 and test_score >= 1.5:
-                print( f"Test case {score_map[test_score]} passed with {test_score} out of 4.0, but it is a bit sketchy.")
-            elif test_score < 1.5:
-                print(f"Test case {score_map[test_score]} failed with {test_score} out of 4.0, it is very sketchy.")
+            if test_score > 0.75:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 1.0.")
+            elif test_score >= 0.5 and test_score <= 0.75:
+                print( f"Test case {score_map[test_score]} passed with {test_score} out of 1.0, but it is a bit sketchy.")
+            elif test_score < 0.5:
+                print(f"Test case {score_map[test_score]} failed with {test_score} out of 1.0, it is very sketchy.")
 
     def scrutinize(self):
         base_domain = get_base_domain(self.parsed.netloc)
@@ -142,9 +162,19 @@ class PhishingDetector:
             tld_score = self.TLD_checker()
             domain_score = self.domain_heuristics()
             whois_age_score = get_whois_info(self.url)
-                
+            
+            # Calculate the final score based on the weights
+            prefix_score = self.weights["prefix"] * (prefix_score)
+            tld_score = self.weights["tld"] * (tld_score)
+            whois_age_score = self.weights["whois_age"] * (whois_age_score)
+            self.p_score = prefix_score
+            self.t_score = tld_score
+            self.d_score = domain_score
+            self.w_score = whois_age_score
+            
+        
             # Calculate the final score
-            final_score = (prefix_score + tld_score + domain_score + whois_age_score) / 4
+            final_score = (prefix_score + tld_score + domain_score + whois_age_score)
             # Determine if the URL is phishing based on the final score
             final_score = round(final_score, 2)
             if final_score < 2:
@@ -161,33 +191,37 @@ class PhishingDetector:
         return trust_review, str(final_score) + " out of 4.0", log      
         
     def domain_heuristics(self):
-        prefix_score = self.prefix_checker(self.url)
-        tld_score = self.TLD_checker()
+        # Perform various checks on the URL to determine its authenticity
         ip_score = self.IP_address_checker()
         length_score = self.length_checker()
         random_char_score = self.random_char_checker()
         sus_score = self.suspicious_checker()
         # Calculate the final score
-        criteria = [prefix_score, tld_score, ip_score, length_score, random_char_score, sus_score]
+        ip_score = self.weights["ip"] * (ip_score)
+        length_score = self.weights["length"] * (length_score)
+        random_char_score = self.weights["random_char"] * (random_char_score)
+        sus_score = self.weights["suspicious"] * (sus_score)
+
+        criteria = [ip_score, length_score, random_char_score, sus_score]
         criteria = [x for x in criteria if x is not None]
         domain_score = sum(criteria) / len(criteria)
         return domain_score
 
-
+    
     def prefix_checker(self, url):
         try:
             scheme = self.parsed.scheme.lower()
             if scheme == "http":
-                return 1
+                return 0.25
             elif scheme == "https":
                 if random.random() < 0.6:
-                    return 1.5
+                    return 0.90
                 else:
-                    return 2
+                    return 0.50
             else:
-                return 1  # fallback for unusual schemes like ftp or blank
+                return 0.50  # fallback for unusual schemes like ftp or blank
         except AttributeError:
-            return 1
+            return 0.25
             log = "Error: Invalid URL format"
             print(log)
 
@@ -195,38 +229,40 @@ class PhishingDetector:
     def TLD_checker(self):
         domain = self.parsed.netloc
         if not domain:
-            return 1
+            return 0.25
         tld = domain.split(".")[-1]
         if not tld:
-            return 1
+            return 0.25
         # check for common TLDs
         if tld in ["com", "net", "org", "io", "co"]:
-            return 2.5
+            return 0.90
         # check for less common TLDs
         elif tld in ["info", 'biz', 'xyz', 'top']:
-            return 1.5
+            return 0.45
         # check for sketchy TLDs
         elif tld in ["tk", "ga", "cf", "gq", "ml"]:
-            return 1
+            return 0.25
         else:
-            return 1
-        
-    
+            return 0.50
+          
     # Check if the URL contains an IP address    
     def IP_address_checker(self):
         domain = self.parsed.netloc
         if domain.replace(".", "").isdigit():
-            return 1
-
+            return 0.25
+        else:
+            return 0.50
     # Check the length of the URL path
     # If the length is greater than 20, it is suspicious
     def length_checker(self):
         length = len(self.parsed.path)
         if length > 20:
             if length > 50:
-                return 1
+                return 0.25
             else:
-                return 2
+                return 0.44
+        else:
+            return 0.50
 
     # Check for random characters in the URL
     def random_char_checker(self):
@@ -238,25 +274,28 @@ class PhishingDetector:
                 flaws.append(1)
         if "_" in self.parsed.netloc:
             if self.parsed.netloc.count("_") > 2:
-                flaws.append(1)
+                flaws.append(2)
         if len(flaws) > 0:
-            return 1
+            return 0.25
+        else:
+            return 0.50
             
     def suspicious_checker(self):
         # Check for suspicious patterns in the URL
-        sus_patterns = ["login", "secure", "update", "verify", "account", "confirm"]
+        
         for pattern in sus_patterns:
             if pattern in self.parsed.path.lower():
-                return 1
+                return 0.25
+        return 0.5 # If no suspicious patterns found, return a higher score
     
     def trust_ranking(self, score):
         # Determine the trust ranking based 
         if score:
-            if score > 3.5:
+            if score > 3:
                 return "Very Authentic."
-            elif score > 2.5:
+            elif score > 2:
                 return "A bit sketchy. But still reliable."
-            elif score > 1.5:
+            elif score > 1:
                 return "Very sketchy. Not Authentic."
             else:
                 return "Seems Phishy. Not Authentic."
@@ -276,8 +315,8 @@ elif not validators.url(UrlLink):
 else:
     checker = PhishingDetector(UrlLink)
     result = checker.parse_url()
-    checker.identify_tests()
     Phish = checker.scrutinize()
+    checker.identify_tests(checker.p_score, checker.t_score, checker.d_score, checker.w_score)
     print("Phishing Status:", Phish[0])
     print("Phishing Status:", Phish[1])
     print("Phishing Status:", Phish[2])
