@@ -58,13 +58,13 @@ sus_patterns = ["login", "secure", "update", "verify", "account", "confirm", "lo
 # The weights for each checker
 # These weights are used to calculate the final score
 CHECKER_WEIGHTS = {
-    "prefix": 0.40,
-    "tld": 0.40,
-    "ip": 0.6,
-    "length": 0.40,
-    "random_char": 0.6,
-    "suspicious": 0.80,
-    "whois_age": 0.80
+    "prefix": 0.50,
+    "tld": 0.50,
+    "ip": 0.5,
+    "length": 0.50,
+    "random_char": 0.5,
+    "suspicious": 0.75,
+    "whois_age": 0.75
 }
 
 
@@ -105,14 +105,14 @@ def get_whois_info(url):
             if age_in_days < 30:
                 return 0.25
             elif age_in_days < 365:
-                return 0.5
+                return 0.70
             else:
-                return 0.75
+                return 1.0
         else:
             return 0.25
     except Exception as e:
         print(f"Error fetching WHOIS info: {e}")
-        return 1
+        return 0.50
 
 
 # PhishingDetector Class
@@ -215,9 +215,9 @@ class PhishingDetector:
                 return 0.25
             elif scheme == "https":
                 if random.random() < 0.6:
-                    return 0.90
+                    return 1.0
                 else:
-                    return 0.50
+                    return 0.75
             else:
                 return 0.50  # fallback for unusual schemes like ftp or blank
         except AttributeError:
@@ -235,10 +235,10 @@ class PhishingDetector:
             return 0.25
         # check for common TLDs
         if tld in ["com", "net", "org", "io", "co"]:
-            return 0.90
+            return 1.0
         # check for less common TLDs
         elif tld in ["info", 'biz', 'xyz', 'top']:
-            return 0.45
+            return 0.70
         # check for sketchy TLDs
         elif tld in ["tk", "ga", "cf", "gq", "ml"]:
             return 0.25
@@ -251,7 +251,7 @@ class PhishingDetector:
         if domain.replace(".", "").isdigit():
             return 0.25
         else:
-            return 0.50
+            return 1.0
     # Check the length of the URL path
     # If the length is greater than 20, it is suspicious
     def length_checker(self):
@@ -262,7 +262,7 @@ class PhishingDetector:
             else:
                 return 0.44
         else:
-            return 0.50
+            return 1.0
 
     # Check for random characters in the URL
     def random_char_checker(self):
@@ -278,15 +278,14 @@ class PhishingDetector:
         if len(flaws) > 0:
             return 0.25
         else:
-            return 0.50
+            return 1.0
             
     def suspicious_checker(self):
-        # Check for suspicious patterns in the URL
-        
+        # Check for suspicious patterns in the URL    
         for pattern in sus_patterns:
             if pattern in self.parsed.path.lower():
                 return 0.25
-        return 0.5 # If no suspicious patterns found, return a higher score
+        return 1.0 # If no suspicious patterns found, return a higher score
     
     def trust_ranking(self, score):
         # Determine the trust ranking based 
